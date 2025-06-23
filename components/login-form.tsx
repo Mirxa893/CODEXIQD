@@ -85,7 +85,7 @@ export function LoginForm({ action = 'sign-in', ...props }) {
     // After successful login or sign-up, check for session
     const { data: session } = await supabase.auth.getSession()
     if (session) {
-      // If the session exists, redirect to homepage
+      // Only perform the redirect to homepage after successful login or sign-up
       window.location.href = '/' // Force redirect to homepage
     }
 
@@ -108,7 +108,8 @@ export function LoginForm({ action = 'sign-in', ...props }) {
 
     // Clean up the listener when the component is unmounted
     return () => {
-      authListener?.unsubscribe()
+      // Properly unsubscribe from the listener by using `subscription.unsubscribe()`
+      authListener?.subscription?.unsubscribe()
     }
   }, [supabase.auth])
 
@@ -166,26 +167,3 @@ export function LoginForm({ action = 'sign-in', ...props }) {
                   Sign In
                 </Link>
               </>
-            )}
-          </p>
-        </div>
-
-        {/* Google Login Button */}
-        <div className="mt-4">
-          <Button
-            variant="outline"
-            onClick={signInWithGoogle}
-            disabled={isLoading}
-            className="w-full"
-          >
-            {isLoading ? (
-              <IconSpinner className="mr-2 animate-spin" />
-            ) : (
-              'Login with Google'
-            )}
-          </Button>
-        </div>
-      </form>
-    </div>
-  )
-}
