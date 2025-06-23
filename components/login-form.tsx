@@ -17,6 +17,27 @@ export function LoginForm({ action = 'sign-in', ...props }) {
   })
   const supabase = createClientComponentClient()
 
+  const signIn = async () => {
+    const { email, password } = formState
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    })
+    return error
+  }
+
+  const signUp = async () => {
+    const { email, password } = formState
+    const { error, data } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: `${location.origin}/api/auth/callback` }
+    })
+    if (!error && !data.session)
+      toast.success('Check your inbox to confirm your email address!')
+    return error
+  }
+
   // Google OAuth login
   const signInWithGoogle = async () => {
     setIsLoading(true)
@@ -38,27 +59,6 @@ export function LoginForm({ action = 'sign-in', ...props }) {
       setIsLoading(false)
       toast.error((error as Error).message || 'An unexpected error occurred.')
     }
-  }
-
-  const signIn = async () => {
-    const { email, password } = formState
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    })
-    return error
-  }
-
-  const signUp = async () => {
-    const { email, password } = formState
-    const { error, data } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { emailRedirectTo: `${location.origin}/api/auth/callback` }
-    })
-    if (!error && !data.session)
-      toast.success('Check your inbox to confirm your email address!')
-    return error
   }
 
   // Handle form submission (sign in or sign up)
@@ -84,12 +84,12 @@ export function LoginForm({ action = 'sign-in', ...props }) {
     setIsLoading(false)
   }
 
+  // Check session only after user has submitted the form or clicked the button
   useEffect(() => {
-    // Check if the user is already signed in on initial load
     const checkSessionAndRedirect = async () => {
       const { data: session } = await supabase.auth.getSession()
       if (session) {
-        window.location.href = '/' // Force redirect to homepage if session exists
+        // Do nothing if session exists, because we've already handled the redirect
       }
     }
 
