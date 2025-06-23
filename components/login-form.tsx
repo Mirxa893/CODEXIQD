@@ -53,7 +53,7 @@ export function LoginForm({ action = 'sign-in', ...props }) {
         throw new Error(error.message)
       }
 
-      // Redirect to Google login page (First Trigger)
+      // Redirect to Google login page
       if (data?.url) {
         window.location.href = data.url // This will redirect the user to Google
       }
@@ -86,7 +86,6 @@ export function LoginForm({ action = 'sign-in', ...props }) {
     setIsLoading(false)
   }
 
-  // Check session only after user has submitted the form or clicked the button
   useEffect(() => {
     const checkSessionAndRedirect = async () => {
       const { data: session } = await supabase.auth.getSession()
@@ -98,13 +97,13 @@ export function LoginForm({ action = 'sign-in', ...props }) {
     checkSessionAndRedirect() // Check session when the component loads
   }, [])
 
-  // Listen for the session change after Google login (second trigger)
+  // Listen for the session change after Google login
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (event === 'SIGNED_IN' && session) {
-          // After successful Google login (second trigger), redirect to homepage
-          window.location.href = '/' // Redirect to homepage after session is confirmed
+          // After successful Google login, redirect to homepage
+          window.location.href = '/' // Redirect to homepage
         }
       }
     )
