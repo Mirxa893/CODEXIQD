@@ -1,26 +1,22 @@
-'use client'
+// This is now a Server Component, as we're using cookies from next/headers
 
-import { useEffect } from 'react'
 import { auth } from '@/auth'
 import { LoginButton } from '@/components/login-button'
 import { LoginForm } from '@/components/login-form'
 import { Separator } from '@/components/ui/separator'
 import { cookies } from 'next/headers'
-import { useRouter } from 'next/navigation'
+import { redirect } from 'next/navigation'
 
 export default async function SignInPage() {
-  const cookieStore = cookies()
+  const cookieStore = cookies() // Server-side cookies check
   const session = await auth({ cookieStore })
 
-  const router = useRouter()
+  // Redirect to home if user is already logged in
+  if (session?.user) {
+    redirect('/')
+  }
 
-  useEffect(() => {
-    // If user is already logged in, redirect to home page
-    if (session?.user) {
-      router.push('/')
-    }
-  }, [session, router])
-
+  // If the user is not logged in, render the SignIn page
   return (
     <div className="flex h-[calc(100vh-theme(spacing.16))] flex-col items-center justify-center py-10">
       <div className="w-full max-w-sm">
