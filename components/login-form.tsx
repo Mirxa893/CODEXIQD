@@ -21,7 +21,8 @@ export function LoginForm({ action = 'sign-in', ...props }) {
   const checkSessionAndRedirect = async () => {
     const { data: session } = await supabase.auth.getSession()
     if (session) {
-      window.location.href = '/' // Force redirect to homepage if session exists
+      // If session exists, redirect to homepage
+      window.location.href = '/' // Force redirect to homepage
     }
   }
 
@@ -176,21 +177,12 @@ export function LoginForm({ action = 'sign-in', ...props }) {
             variant="outline"
             onClick={signInWithGoogle}
             disabled={isLoading}
-            className="w-full flex items-center justify-center"
+            className="w-full"
           >
             {isLoading ? (
               <IconSpinner className="mr-2 animate-spin" />
             ) : (
-              <>
-                <img
-                  src="https://upload.wikimedia.org/wikipedia/commons/4/4b/Google_2015_logo.svg"
-                  alt="Google logo"
-                  width={20}
-                  height={20}
-                  className="mr-2"
-                />
-                Continue with Google
-              </>
+              'Continue with Google'
             )}
           </Button>
         </div>
