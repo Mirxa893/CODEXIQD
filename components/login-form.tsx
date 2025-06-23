@@ -54,14 +54,25 @@ export function LoginForm({ action = 'sign-in', ...props }) {
       const { data: session } = await supabase.auth.getSession()
       if (session) {
         // After successful login, trigger a refresh
-        router.refresh() // Force re-render
+        router.refresh() // This forces a re-render
       } else {
         setIsLoading(false)
       }
     }
   }
 
-  const handleOnSubmit = async (e) => {
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: session } = await supabase.auth.getSession()
+      if (session) {
+        // If session exists, redirect immediately after login
+        router.replace('/') // Redirect to homepage
+      }
+    }
+    checkSession()
+  }, [router, supabase.auth])
+
+  const handleOnSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
     const error = action === 'sign-in' ? await signIn() : await signUp()
@@ -75,8 +86,7 @@ export function LoginForm({ action = 'sign-in', ...props }) {
     setIsLoading(false)
     const { data: session } = await supabase.auth.getSession()
     if (session) {
-      // After successful sign-in or sign-up, trigger a refresh
-      router.refresh() // Force re-render
+      router.replace('/') // Redirect to homepage after sign-in or sign-up
     }
   }
 
