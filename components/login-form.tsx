@@ -76,7 +76,7 @@ export function LoginForm({
       (event, session) => {
         if (event === 'SIGNED_IN' && session) {
           // If signed in, redirect to home page
-          router.push('/') // Redirect to home page
+          router.replace('/') // Use replace instead of push for better routing
         }
       }
     )
@@ -101,7 +101,7 @@ export function LoginForm({
     }
 
     setIsLoading(false)
-    router.push('/') // Redirect to home page after sign-in or sign-up
+    router.replace('/') // Redirect to home page after sign-in or sign-up
   }
 
   return (
