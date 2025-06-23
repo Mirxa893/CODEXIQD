@@ -51,11 +51,9 @@ export async function Header() {
           )}
         </div>
       </div>
+      {/* Removed CODEX-IQ */}
       <div className="flex items-center justify-center flex-grow text-center">
-        {/* Updated text to CODEX-IQ */}
-        <span className="text-lg font-bold text-muted-foreground">
-          CODEX-IQ
-        </span>
+        {/* This section is now empty */}
       </div>
       <div className="flex items-center justify-end space-x-2">
         {/* LogIQ Curve Button */}
@@ -65,7 +63,7 @@ export async function Header() {
           rel="noopener noreferrer"
           className={cn(buttonVariants())}
         >
-          {/* Ensure proper display of LogIQ Curve text on mobile */}
+          {/* Ensure proper display of LogIQ Curve text on both small and large screens */}
           <span className="hidden sm:block">LogIQ Curve</span>
           <span className="sm:hidden">LogIQ</span>
         </a>
