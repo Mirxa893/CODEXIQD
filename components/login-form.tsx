@@ -17,15 +17,6 @@ export function LoginForm({ action = 'sign-in', ...props }) {
   })
   const supabase = createClientComponentClient()
 
-  // Session check and redirect logic
-  const checkSessionAndRedirect = async () => {
-    const { data: session } = await supabase.auth.getSession()
-    if (session) {
-      // If session exists, redirect to homepage
-      window.location.href = '/' // Force redirect to homepage
-    }
-  }
-
   const signIn = async () => {
     const { email, password } = formState
     const { error } = await supabase.auth.signInWithPassword({
@@ -95,6 +86,13 @@ export function LoginForm({ action = 'sign-in', ...props }) {
 
   useEffect(() => {
     // Check if the user is already signed in on initial load
+    const checkSessionAndRedirect = async () => {
+      const { data: session } = await supabase.auth.getSession()
+      if (session) {
+        window.location.href = '/' // Force redirect to homepage if session exists
+      }
+    }
+
     checkSessionAndRedirect()
 
     // Listen for changes in the authentication state
