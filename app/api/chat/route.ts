@@ -4,7 +4,7 @@ import { Database } from '@/lib/db_types'
 
 import { auth } from '@/auth'
 import { nanoid } from '@/lib/utils'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'  // Import the supabase client
 
 const SPACE_URL = 'https://mirxakamran893-LOGIQCURVECODE.hf.space/chat'
 
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     })
   }
 
-  // If file upload is included, handle the file upload to Supabase Storage
+  // Handle file upload logic
   if (req.method === 'POST' && req.headers.get('content-type')?.includes('multipart/form-data')) {
     const formData = await req.formData()
     const file = formData.get('file')
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
     if (file && file instanceof Blob) {
       const fileName = `${nanoid()}_${file.name}`
       const filePath = `uploads/${fileName}`
-      
+
       // Upload file to Supabase Storage
       const { data, error } = await supabase.storage.from('chat-files').upload(filePath, file)
 
@@ -56,13 +56,14 @@ export async function POST(req: Request) {
       // Get the URL of the uploaded file
       const fileUrl = supabase.storage.from('chat-files').getPublicUrl(filePath).publicURL
 
-      // Send the file URL to the AI model (or process it as needed)
+      // Process the uploaded file (e.g., send to Hugging Face API for AI response)
       const aiResponse = await processFileWithAI(fileUrl)
+
       return new Response(aiResponse, { status: 200 })
     }
   }
 
-  // AI Processing Logic
+  // AI Processing Logic (existing logic)
   const history: [string, string][] = [] // Empty history for now
 
   const controller = new AbortController()
@@ -136,7 +137,7 @@ export async function POST(req: Request) {
 
 // Simulating AI processing of file content
 async function processFileWithAI(fileUrl: string) {
-  // Send the file URL to the AI processing service (this could be Hugging Face or your AI model)
+  // Here you can send the file URL to the AI model or Hugging Face
   return {
     response: `AI Response based on uploaded file at: ${fileUrl}`,
   }
