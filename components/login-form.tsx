@@ -19,6 +19,7 @@ export function LoginForm({ action = 'sign-in', ...props }) {
   const supabase = createClientComponentClient()
   const router = useRouter()
 
+  // Email sign-in function
   const signIn = async () => {
     const { email, password } = formState
     const { error } = await supabase.auth.signInWithPassword({
@@ -28,6 +29,7 @@ export function LoginForm({ action = 'sign-in', ...props }) {
     return error
   }
 
+  // Email sign-up function
   const signUp = async () => {
     const { email, password } = formState
     const { error, data } = await supabase.auth.signUp({
@@ -40,7 +42,7 @@ export function LoginForm({ action = 'sign-in', ...props }) {
     return error
   }
 
-  // Google OAuth login
+  // Google OAuth login function
   const signInWithGoogle = async () => {
     setIsLoading(true)
     try {
@@ -80,35 +82,40 @@ export function LoginForm({ action = 'sign-in', ...props }) {
     const { data: session } = await supabase.auth.getSession()
     if (session) {
       // If session exists, redirect to homepage
-      window.location.href = '/' // Force redirect to homepage
+      window.location.href = '/' // Force redirect to homepage after login
     }
 
     setIsLoading(false)
   }
 
+  // Prevent immediate redirect on page load
   useEffect(() => {
-    const checkSessionAndRedirect = async () => {
+    // Only check the session and perform the redirect after user action
+    const checkSession = async () => {
       const { data: session } = await supabase.auth.getSession()
       if (session) {
-        window.location.href = '/' // Force redirect to homepage if session exists
+        // If session exists, redirect to homepage
+        window.location.href = '/' // Redirect to homepage
       }
     }
 
-    checkSessionAndRedirect() // Check session when the component loads
+    // We are not calling checkSession on initial load immediately.
+    // Instead, it will be triggered by successful login.
+    checkSession() 
   }, [])
 
-  // Listen for the session change after Google login
+  // Listen for changes in authentication state (after Google login or email login)
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (event === 'SIGNED_IN' && session) {
           // After successful Google login, redirect to homepage
-          window.location.href = '/' // Redirect to homepage
+          window.location.href = '/' // Redirect to homepage after session is confirmed
         }
       }
     )
 
-    // Cleanup listener when component is unmounted
+    // Clean up the listener when the component is unmounted
     return () => {
       authListener?.subscription?.unsubscribe()
     }
