@@ -55,6 +55,21 @@ export function LoginForm({
     return error
   }
 
+  // Google OAuth login function
+  const signInWithGoogle = async () => {
+    setIsLoading(true)
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+    })
+
+    if (error) {
+      setIsLoading(false)
+      toast.error(error.message)
+    } else {
+      setIsLoading(false)
+    }
+  }
+
   const handleOnSubmit: React.FormEventHandler<HTMLFormElement> = async e => {
     e.preventDefault()
     setIsLoading(true)
@@ -127,6 +142,22 @@ export function LoginForm({
               </>
             )}
           </p>
+        </div>
+
+        {/* Google Login Button */}
+        <div className="mt-4">
+          <Button
+            variant="outline"
+            onClick={signInWithGoogle}
+            disabled={isLoading}
+            className="w-full"
+          >
+            {isLoading ? (
+              <IconSpinner className="mr-2 animate-spin" />
+            ) : (
+              'Login with Google'
+            )}
+          </Button>
         </div>
       </form>
     </div>
