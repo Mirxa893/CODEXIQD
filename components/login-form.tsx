@@ -70,6 +70,25 @@ export function LoginForm({
     }
   }
 
+  // Monitor auth state changes to detect when the user is logged in
+  React.useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          // If signed in, refresh the page or navigate to another page
+          router.refresh() // This is for refreshing the current page
+          // Alternatively, you could navigate to a different page:
+          // router.push('/dashboard')
+        }
+      }
+    )
+
+    // Clean up the listener on unmount
+    return () => {
+      authListener?.unsubscribe()
+    }
+  }, [router, supabase.auth])
+
   const handleOnSubmit: React.FormEventHandler<HTMLFormElement> = async e => {
     e.preventDefault()
     setIsLoading(true)
