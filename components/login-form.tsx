@@ -22,7 +22,6 @@ export function LoginForm({
 }: LoginFormProps) {
   const [isLoading, setIsLoading] = React.useState(false)
   const router = useRouter()
-  // Create a Supabase client configured to use cookies
   const supabase = createClientComponentClient()
 
   const [formState, setFormState] = React.useState<{
@@ -66,27 +65,16 @@ export function LoginForm({
       setIsLoading(false)
       toast.error(error.message)
     } else {
-      setIsLoading(false)
+      // Check session immediately after login
+      const { data: session, error } = await supabase.auth.getSession()
+      if (session) {
+        // If session is valid, trigger page redirect
+        router.replace('/') // Redirect to home page immediately
+      } else {
+        setIsLoading(false)
+      }
     }
   }
-
-  // Monitor auth state changes to detect when the user is logged in
-  React.useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (event === 'SIGNED_IN' && session) {
-          // If signed in, trigger a re-render immediately
-          router.replace('/') // This will refresh the route
-        }
-      }
-    )
-
-    // Clean up the listener on unmount
-    return () => {
-      // Properly unsubscribe from the listener
-      authListener?.subscription?.unsubscribe()
-    }
-  }, [router, supabase.auth])
 
   const handleOnSubmit: React.FormEventHandler<HTMLFormElement> = async e => {
     e.preventDefault()
@@ -101,7 +89,11 @@ export function LoginForm({
     }
 
     setIsLoading(false)
-    router.replace('/') // Redirect to home page after sign-in or sign-up
+    // Manually check session and redirect
+    const { data: session } = await supabase.auth.getSession()
+    if (session) {
+      router.replace('/') // Redirect to home page after sign-in or sign-up
+    }
   }
 
   return (
