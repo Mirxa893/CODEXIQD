@@ -75,17 +75,16 @@ export function LoginForm({
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (event === 'SIGNED_IN' && session) {
-          // If signed in, refresh the page or navigate to another page
-          router.refresh() // This is for refreshing the current page
-          // Alternatively, you could navigate to a different page:
-          // router.push('/dashboard')
+          // If signed in, redirect to home page
+          router.push('/') // Redirect to home page
         }
       }
     )
 
     // Clean up the listener on unmount
     return () => {
-      authListener?.unsubscribe()
+      // Properly unsubscribe from the listener
+      authListener?.subscription?.unsubscribe()
     }
   }, [router, supabase.auth])
 
@@ -102,7 +101,7 @@ export function LoginForm({
     }
 
     setIsLoading(false)
-    router.refresh()
+    router.push('/') // Redirect to home page after sign-in or sign-up
   }
 
   return (
