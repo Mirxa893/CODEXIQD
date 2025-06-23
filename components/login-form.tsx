@@ -19,7 +19,7 @@ export function LoginForm({ action = 'sign-in', ...props }) {
   const supabase = createClientComponentClient()
   const router = useRouter()
 
-  // Email sign-in function
+  // Sign in with email/password
   const signIn = async () => {
     const { email, password } = formState
     const { error } = await supabase.auth.signInWithPassword({
@@ -29,7 +29,7 @@ export function LoginForm({ action = 'sign-in', ...props }) {
     return error
   }
 
-  // Email sign-up function
+  // Sign up with email/password
   const signUp = async () => {
     const { email, password } = formState
     const { error, data } = await supabase.auth.signUp({
@@ -42,11 +42,10 @@ export function LoginForm({ action = 'sign-in', ...props }) {
     return error
   }
 
-  // Google OAuth login function
+  // Google OAuth login
   const signInWithGoogle = async () => {
     setIsLoading(true)
     try {
-      // Start the Google OAuth process with Supabase
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
       })
@@ -55,9 +54,9 @@ export function LoginForm({ action = 'sign-in', ...props }) {
         throw new Error(error.message)
       }
 
-      // Redirect to Google login page
       if (data?.url) {
-        window.location.href = data.url // This will redirect the user to Google
+        // First Trigger: Redirect to Google login page
+        window.location.href = data.url // Redirect to Google login page
       }
     } catch (error: unknown) {
       setIsLoading(false)
@@ -65,7 +64,7 @@ export function LoginForm({ action = 'sign-in', ...props }) {
     }
   }
 
-  // Handle form submission (sign in or sign up)
+  // Handle form submission (sign-in or sign-up)
   const handleOnSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
@@ -88,34 +87,23 @@ export function LoginForm({ action = 'sign-in', ...props }) {
     setIsLoading(false)
   }
 
-  // Prevent immediate redirect on page load
+  // Prevent redirect loop: Check session only after form submission or button click
   useEffect(() => {
-    // Only check the session and perform the redirect after user action
-    const checkSession = async () => {
-      const { data: session } = await supabase.auth.getSession()
-      if (session) {
-        // If session exists, redirect to homepage
-        window.location.href = '/' // Redirect to homepage
-      }
-    }
+    // Do nothing on page load; only trigger session check when the user interacts with the form or clicks Google login
+  }, []) // Empty dependency ensures this runs only once, and won't cause redirect loop
 
-    // We are not calling checkSession on initial load immediately.
-    // Instead, it will be triggered by successful login.
-    checkSession() 
-  }, [])
-
-  // Listen for changes in authentication state (after Google login or email login)
+  // Listen for changes in authentication state (after Google login)
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (event === 'SIGNED_IN' && session) {
           // After successful Google login, redirect to homepage
-          window.location.href = '/' // Redirect to homepage after session is confirmed
+          window.location.href = '/' // Redirect to homepage
         }
       }
     )
 
-    // Clean up the listener when the component is unmounted
+    // Cleanup listener when component is unmounted
     return () => {
       authListener?.subscription?.unsubscribe()
     }
