@@ -41,7 +41,7 @@ export function LoginForm({ action = 'sign-in', ...props }) {
   const signInWithGoogle = async () => {
     setIsLoading(true)
     try {
-      // Use Supabase's `signInWithOAuth` method to trigger Google OAuth
+      // Start the OAuth login process with Google
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
       })
@@ -50,9 +50,10 @@ export function LoginForm({ action = 'sign-in', ...props }) {
         throw new Error(error.message)
       }
 
-      // Redirect to the URL provided by Supabase for Google OAuth
+      // After the user is redirected to Google, check for session
       if (data?.url) {
-        window.location.href = data.url // Redirect to Google sign-in page
+        // Redirect to the OAuth URL for Google login
+        window.location.href = data.url // This will redirect to Google login page
       }
     } catch (error: unknown) {
       setIsLoading(false)
@@ -62,8 +63,8 @@ export function LoginForm({ action = 'sign-in', ...props }) {
 
   const handleOnSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-
     setIsLoading(true)
+
     const error = action === 'sign-in' ? await signIn() : await signUp()
 
     if (error) {
@@ -75,7 +76,7 @@ export function LoginForm({ action = 'sign-in', ...props }) {
     // After successful login or signup, check for session
     const { data: session } = await supabase.auth.getSession()
     if (session) {
-      // Only perform the redirect to homepage after successful login or sign-up
+      // Redirect to homepage after successful sign-in or sign-up
       window.location.href = '/' // Force redirect to homepage
     }
 
