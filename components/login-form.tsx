@@ -8,6 +8,7 @@ import { Input } from './ui/input'
 import { Label } from './ui/label'
 import Link from 'next/link'
 import { toast } from 'react-hot-toast'
+import { useRouter } from 'next/navigation'
 
 export function LoginForm({ action = 'sign-in', ...props }) {
   const [isLoading, setIsLoading] = useState(false)
@@ -16,6 +17,7 @@ export function LoginForm({ action = 'sign-in', ...props }) {
     password: ''
   })
   const supabase = createClientComponentClient()
+  const router = useRouter()
 
   const signIn = async () => {
     const { email, password } = formState
@@ -51,7 +53,7 @@ export function LoginForm({ action = 'sign-in', ...props }) {
         throw new Error(error.message)
       }
 
-      // Redirect to Google login page
+      // Redirect to Google login page (First Trigger)
       if (data?.url) {
         window.location.href = data.url // This will redirect the user to Google
       }
@@ -89,12 +91,29 @@ export function LoginForm({ action = 'sign-in', ...props }) {
     const checkSessionAndRedirect = async () => {
       const { data: session } = await supabase.auth.getSession()
       if (session) {
-        // Do nothing if session exists, because we've already handled the redirect
+        window.location.href = '/' // Force redirect to homepage if session exists
       }
     }
 
     checkSessionAndRedirect() // Check session when the component loads
   }, [])
+
+  // Listen for the session change after Google login (second trigger)
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          // After successful Google login (second trigger), redirect to homepage
+          window.location.href = '/' // Redirect to homepage after session is confirmed
+        }
+      }
+    )
+
+    // Cleanup listener when component is unmounted
+    return () => {
+      authListener?.subscription?.unsubscribe()
+    }
+  }, [supabase.auth])
 
   return (
     <div {...props}>
