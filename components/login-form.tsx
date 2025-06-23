@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import * as React from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+
 import { Button } from '@/components/ui/button'
 import { IconSpinner } from '@/components/ui/icons'
 import { Input } from './ui/input'
@@ -10,16 +11,28 @@ import Link from 'next/link'
 import { toast } from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 
-export function LoginForm({ action = 'sign-in', ...props }) {
-  const [isLoading, setIsLoading] = useState(false)
-  const [formState, setFormState] = useState({
+interface LoginFormProps extends React.ComponentPropsWithoutRef<'div'> {
+  action: 'sign-in' | 'sign-up'
+}
+
+export function LoginForm({
+  className,
+  action = 'sign-in',
+  ...props
+}: LoginFormProps) {
+  const [isLoading, setIsLoading] = React.useState(false)
+  const router = useRouter()
+  // Create a Supabase client configured to use cookies
+  const supabase = createClientComponentClient()
+
+  const [formState, setFormState] = React.useState<{
+    email: string
+    password: string
+  }>({
     email: '',
     password: ''
   })
-  const supabase = createClientComponentClient()
-  const router = useRouter()
 
-  // Sign in with email/password
   const signIn = async () => {
     const { email, password } = formState
     const { error } = await supabase.auth.signInWithPassword({
@@ -29,7 +42,6 @@ export function LoginForm({ action = 'sign-in', ...props }) {
     return error
   }
 
-  // Sign up with email/password
   const signUp = async () => {
     const { email, password } = formState
     const { error, data } = await supabase.auth.signUp({
@@ -37,35 +49,13 @@ export function LoginForm({ action = 'sign-in', ...props }) {
       password,
       options: { emailRedirectTo: `${location.origin}/api/auth/callback` }
     })
+
     if (!error && !data.session)
       toast.success('Check your inbox to confirm your email address!')
     return error
   }
 
-  // Google OAuth login
-  const signInWithGoogle = async () => {
-    setIsLoading(true)
-    try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-      })
-
-      if (error) {
-        throw new Error(error.message)
-      }
-
-      if (data?.url) {
-        // First Trigger: Redirect to Google login page
-        window.location.href = data.url // Redirect to Google login page
-      }
-    } catch (error: unknown) {
-      setIsLoading(false)
-      toast.error((error as Error).message || 'An unexpected error occurred.')
-    }
-  }
-
-  // Handle form submission (sign-in or sign-up)
-  const handleOnSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleOnSubmit: React.FormEventHandler<HTMLFormElement> = async e => {
     e.preventDefault()
     setIsLoading(true)
 
@@ -77,37 +67,9 @@ export function LoginForm({ action = 'sign-in', ...props }) {
       return
     }
 
-    // After successful login or sign-up, check for session
-    const { data: session } = await supabase.auth.getSession()
-    if (session) {
-      // If session exists, redirect to homepage
-      window.location.href = '/' // Force redirect to homepage after login
-    }
-
     setIsLoading(false)
+    router.refresh()
   }
-
-  // Prevent redirect loop: Check session only after form submission or button click
-  useEffect(() => {
-    // Do nothing on page load; only trigger session check when the user interacts with the form or clicks Google login
-  }, []) // Empty dependency ensures this runs only once, and won't cause redirect loop
-
-  // Listen for changes in authentication state (after Google login)
-  useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (event === 'SIGNED_IN' && session) {
-          // After successful Google login, redirect to homepage
-          window.location.href = '/' // Redirect to homepage
-        }
-      }
-    )
-
-    // Cleanup listener when component is unmounted
-    return () => {
-      authListener?.subscription?.unsubscribe()
-    }
-  }, [supabase.auth])
 
   return (
     <div {...props}>
@@ -119,8 +81,8 @@ export function LoginForm({ action = 'sign-in', ...props }) {
               name="email"
               type="email"
               value={formState.email}
-              onChange={(e) =>
-                setFormState((prev) => ({
+              onChange={e =>
+                setFormState(prev => ({
                   ...prev,
                   email: e.target.value
                 }))
@@ -133,8 +95,8 @@ export function LoginForm({ action = 'sign-in', ...props }) {
               name="password"
               type="password"
               value={formState.password}
-              onChange={(e) =>
-                setFormState((prev) => ({
+              onChange={e =>
+                setFormState(prev => ({
                   ...prev,
                   password: e.target.value
                 }))
@@ -165,22 +127,6 @@ export function LoginForm({ action = 'sign-in', ...props }) {
               </>
             )}
           </p>
-        </div>
-
-        {/* Google Login Button */}
-        <div className="mt-4">
-          <Button
-            variant="outline"
-            onClick={signInWithGoogle}
-            disabled={isLoading}
-            className="w-full"
-          >
-            {isLoading ? (
-              <IconSpinner className="mr-2 animate-spin" />
-            ) : (
-              'Continue with Google'
-            )}
-          </Button>
         </div>
       </form>
     </div>
