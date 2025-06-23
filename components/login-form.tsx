@@ -54,7 +54,7 @@ export function LoginForm({ action = 'sign-in', ...props }) {
       const { data: session } = await supabase.auth.getSession()
       if (session) {
         // After successful login, trigger a redirect to the homepage
-        router.push('/') // Redirect to homepage immediately
+        window.location.href = '/' // Force redirect to homepage
       } else {
         setIsLoading(false)
       }
@@ -66,7 +66,7 @@ export function LoginForm({ action = 'sign-in', ...props }) {
       const { data: session } = await supabase.auth.getSession()
       if (session) {
         // If session exists, redirect immediately after login
-        router.push('/') // Redirect to homepage
+        window.location.href = '/' // Redirect to homepage immediately
       }
     }
     checkSession()
@@ -86,7 +86,8 @@ export function LoginForm({ action = 'sign-in', ...props }) {
     setIsLoading(false)
     const { data: session } = await supabase.auth.getSession()
     if (session) {
-      router.push('/') // Redirect to homepage after sign-in or sign-up
+      // Redirect to homepage after sign-in or sign-up
+      window.location.href = '/' // Force redirect to homepage
     }
   }
 
