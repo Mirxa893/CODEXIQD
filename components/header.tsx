@@ -52,9 +52,9 @@ export async function Header() {
         </div>
       </div>
       <div className="flex items-center justify-center flex-grow text-center">
-        {/* Add CodexIQ By LogIQ Curve LLC in the center with bold font */}
+        {/* Updated text to CODEX-IQ */}
         <span className="text-lg font-bold text-muted-foreground">
-          CodexIQ By LogIQ Curve LLC
+          CODEX-IQ
         </span>
       </div>
       <div className="flex items-center justify-end space-x-2">
@@ -65,7 +65,7 @@ export async function Header() {
           rel="noopener noreferrer"
           className={cn(buttonVariants())}
         >
-          {/* Show full "LogIQ Curve" text on larger screens, and "LogIQ" on smaller screens */}
+          {/* Ensure proper display of LogIQ Curve text on mobile */}
           <span className="hidden sm:block">LogIQ Curve</span>
           <span className="sm:hidden">LogIQ</span>
         </a>
