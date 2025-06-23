@@ -108,7 +108,6 @@ export function LoginForm({ action = 'sign-in', ...props }) {
 
     // Clean up the listener when the component is unmounted
     return () => {
-      // Properly unsubscribe from the listener by using `subscription.unsubscribe()`
       authListener?.subscription?.unsubscribe()
     }
   }, [supabase.auth])
@@ -167,3 +166,35 @@ export function LoginForm({ action = 'sign-in', ...props }) {
                   Sign In
                 </Link>
               </>
+            )}
+          </p>
+        </div>
+
+        {/* Google Login Button */}
+        <div className="mt-4">
+          <Button
+            variant="outline"
+            onClick={signInWithGoogle}
+            disabled={isLoading}
+            className="w-full flex items-center justify-center"
+          >
+            {isLoading ? (
+              <IconSpinner className="mr-2 animate-spin" />
+            ) : (
+              <>
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/4/4b/Google_2015_logo.svg"
+                  alt="Google logo"
+                  width={20}
+                  height={20}
+                  className="mr-2"
+                />
+                Continue with Google
+              </>
+            )}
+          </Button>
+        </div>
+      </form>
+    </div>
+  )
+}
