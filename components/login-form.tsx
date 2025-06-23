@@ -1,8 +1,7 @@
 'use client'
 
-import * as React from 'react'
+import { useEffect } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-
 import { Button } from '@/components/ui/button'
 import { IconSpinner } from '@/components/ui/icons'
 import { Input } from './ui/input'
@@ -11,23 +10,12 @@ import Link from 'next/link'
 import { toast } from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 
-interface LoginFormProps extends React.ComponentPropsWithoutRef<'div'> {
-  action: 'sign-in' | 'sign-up'
-}
-
-export function LoginForm({
-  className,
-  action = 'sign-in',
-  ...props
-}: LoginFormProps) {
+export function LoginForm({ action = 'sign-in', ...props }) {
   const [isLoading, setIsLoading] = React.useState(false)
   const router = useRouter()
   const supabase = createClientComponentClient()
 
-  const [formState, setFormState] = React.useState<{
-    email: string
-    password: string
-  }>({
+  const [formState, setFormState] = React.useState({
     email: '',
     password: ''
   })
@@ -48,13 +36,11 @@ export function LoginForm({
       password,
       options: { emailRedirectTo: `${location.origin}/api/auth/callback` }
     })
-
     if (!error && !data.session)
       toast.success('Check your inbox to confirm your email address!')
     return error
   }
 
-  // Google OAuth login function
   const signInWithGoogle = async () => {
     setIsLoading(true)
     const { error } = await supabase.auth.signInWithOAuth({
@@ -65,21 +51,30 @@ export function LoginForm({
       setIsLoading(false)
       toast.error(error.message)
     } else {
-      // Check session immediately after login
-      const { data: session, error } = await supabase.auth.getSession()
+      const { data: session } = await supabase.auth.getSession()
       if (session) {
-        // If session is valid, trigger page redirect
-        router.replace('/') // Redirect to home page immediately
+        // If session exists, redirect to homepage immediately
+        router.replace('/') // This ensures page redirect
       } else {
         setIsLoading(false)
       }
     }
   }
 
-  const handleOnSubmit: React.FormEventHandler<HTMLFormElement> = async e => {
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: session } = await supabase.auth.getSession()
+      if (session) {
+        // If session exists, redirect immediately after login
+        router.replace('/') // Redirect to homepage
+      }
+    }
+    checkSession()
+  }, [router, supabase.auth])
+
+  const handleOnSubmit = async (e) => {
     e.preventDefault()
     setIsLoading(true)
-
     const error = action === 'sign-in' ? await signIn() : await signUp()
 
     if (error) {
@@ -89,10 +84,9 @@ export function LoginForm({
     }
 
     setIsLoading(false)
-    // Manually check session and redirect
     const { data: session } = await supabase.auth.getSession()
     if (session) {
-      router.replace('/') // Redirect to home page after sign-in or sign-up
+      router.replace('/') // Redirect to homepage after sign-in or sign-up
     }
   }
 
@@ -106,8 +100,8 @@ export function LoginForm({
               name="email"
               type="email"
               value={formState.email}
-              onChange={e =>
-                setFormState(prev => ({
+              onChange={(e) =>
+                setFormState((prev) => ({
                   ...prev,
                   email: e.target.value
                 }))
@@ -120,8 +114,8 @@ export function LoginForm({
               name="password"
               type="password"
               value={formState.password}
-              onChange={e =>
-                setFormState(prev => ({
+              onChange={(e) =>
+                setFormState((prev) => ({
                   ...prev,
                   password: e.target.value
                 }))
