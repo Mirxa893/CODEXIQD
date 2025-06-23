@@ -4,12 +4,13 @@ import { Database } from '@/lib/db_types'
 
 import { auth } from '@/auth'
 import { nanoid } from '@/lib/utils'
-import { supabase } from '@/lib/supabase'  // Import the Supabase client
+import { supabase } from '@/lib/supabase' // Import Supabase client
 
 const SPACE_URL = 'https://mirxakamran893-LOGIQCURVECODE.hf.space/chat'
 
 export const runtime = 'edge'
 
+// The main POST method to handle chat and file uploads
 export async function POST(req: Request) {
   const cookieStore = cookies()
   const supabaseClient = createRouteHandlerClient<Database>({
@@ -27,7 +28,7 @@ export async function POST(req: Request) {
     // You may set another API key for preview, if needed
   }
 
-  // Ensure messages have valid content
+  // Ensure that messages contain valid content
   const messageContents = messages.map((msg: { content: string }) => msg.content).join('\n')
 
   if (!messageContents.trim()) {
@@ -37,7 +38,7 @@ export async function POST(req: Request) {
     })
   }
 
-  // Handle file upload logic if provided
+  // Handle file upload if it's part of the request
   if (req.method === 'POST' && req.headers.get('content-type')?.includes('multipart/form-data')) {
     const formData = await req.formData()
     const file = formData.get('file')
@@ -57,14 +58,15 @@ export async function POST(req: Request) {
       const { data: fileData } = supabase.storage.from('chat-files').getPublicUrl(filePath)
       const fileUrl = fileData.publicUrl
 
-      // Process the file URL or pass it to AI model
+      // Process the file URL with AI model (Hugging Face or another AI model)
       const aiResponse = await processFileWithAI(fileUrl)
 
-      return new Response(aiResponse, { status: 200 })
+      // Return AI response
+      return new Response(aiResponse.response, { status: 200 })
     }
   }
 
-  // AI Processing Logic (existing logic)
+  // AI Processing Logic (existing logic without file upload)
   const history: [string, string][] = [] // Empty history for now
 
   const controller = new AbortController()
@@ -136,9 +138,9 @@ export async function POST(req: Request) {
   }
 }
 
-// Simulating AI processing of the uploaded file's URL
+// Simulate AI processing based on file URL
 async function processFileWithAI(fileUrl: string) {
-  // Here you can send the file URL to the AI model or Hugging Face
+  // Here, you can replace this with your actual AI model integration (e.g., Hugging Face)
   return {
     response: `AI Response based on uploaded file at: ${fileUrl}`,
   }
