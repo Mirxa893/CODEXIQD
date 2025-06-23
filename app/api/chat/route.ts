@@ -4,7 +4,7 @@ import { Database } from '@/lib/db_types'
 
 import { auth } from '@/auth'
 import { nanoid } from '@/lib/utils'
-import { supabase } from '@/lib/supabase'  // Import the supabase client
+import { supabase } from '@/lib/supabase'  // Import the Supabase client
 
 const SPACE_URL = 'https://mirxakamran893-LOGIQCURVECODE.hf.space/chat'
 
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     })
   }
 
-  // Handle file upload logic
+  // Handle file upload logic if provided
   if (req.method === 'POST' && req.headers.get('content-type')?.includes('multipart/form-data')) {
     const formData = await req.formData()
     const file = formData.get('file')
@@ -53,10 +53,11 @@ export async function POST(req: Request) {
         return new Response(`Error uploading file: ${error.message}`, { status: 500 })
       }
 
-      // Get the URL of the uploaded file
-      const fileUrl = supabase.storage.from('chat-files').getPublicUrl(filePath).publicURL
+      // Get the public URL of the uploaded file
+      const { data: fileData } = supabase.storage.from('chat-files').getPublicUrl(filePath)
+      const fileUrl = fileData.publicUrl
 
-      // Process the uploaded file (e.g., send to Hugging Face API for AI response)
+      // Process the file URL or pass it to AI model
       const aiResponse = await processFileWithAI(fileUrl)
 
       return new Response(aiResponse, { status: 200 })
@@ -135,7 +136,7 @@ export async function POST(req: Request) {
   }
 }
 
-// Simulating AI processing of file content
+// Simulating AI processing of the uploaded file's URL
 async function processFileWithAI(fileUrl: string) {
   // Here you can send the file URL to the AI model or Hugging Face
   return {
