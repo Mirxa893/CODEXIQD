@@ -41,7 +41,8 @@ export function LoginForm({ action = 'sign-in', ...props }) {
   const signInWithGoogle = async () => {
     setIsLoading(true)
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      // Use Supabase's `signInWithOAuth` method to trigger Google OAuth
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
       })
 
@@ -49,15 +50,9 @@ export function LoginForm({ action = 'sign-in', ...props }) {
         throw new Error(error.message)
       }
 
-      // Wait for session data to be available
-      const { data: session } = await supabase.auth.getSession()
-
-      if (session) {
-        // After successful login, trigger a redirect to the homepage
-        window.location.href = '/' // Force redirect to homepage
-      } else {
-        setIsLoading(false)
-        toast.error('Something went wrong during Google login')
+      // Redirect to the URL provided by Supabase for Google OAuth
+      if (data?.url) {
+        window.location.href = data.url // Redirect to Google sign-in page
       }
     } catch (error: unknown) {
       setIsLoading(false)
