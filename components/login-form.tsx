@@ -53,8 +53,8 @@ export function LoginForm({ action = 'sign-in', ...props }) {
     } else {
       const { data: session } = await supabase.auth.getSession()
       if (session) {
-        // After successful login, trigger a refresh
-        router.refresh() // This forces a re-render
+        // After successful login, trigger a redirect to the homepage
+        router.push('/') // Redirect to homepage immediately
       } else {
         setIsLoading(false)
       }
@@ -66,7 +66,7 @@ export function LoginForm({ action = 'sign-in', ...props }) {
       const { data: session } = await supabase.auth.getSession()
       if (session) {
         // If session exists, redirect immediately after login
-        router.replace('/') // Redirect to homepage
+        router.push('/') // Redirect to homepage
       }
     }
     checkSession()
@@ -86,7 +86,7 @@ export function LoginForm({ action = 'sign-in', ...props }) {
     setIsLoading(false)
     const { data: session } = await supabase.auth.getSession()
     if (session) {
-      router.replace('/') // Redirect to homepage after sign-in or sign-up
+      router.push('/') // Redirect to homepage after sign-in or sign-up
     }
   }
 
