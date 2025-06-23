@@ -1,6 +1,6 @@
 'use client'
 
-import * as React from 'react' // Add this import
+import { useEffect, useState } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Button } from '@/components/ui/button'
 import { IconSpinner } from '@/components/ui/icons'
@@ -11,11 +11,11 @@ import { toast } from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 
 export function LoginForm({ action = 'sign-in', ...props }) {
-  const [isLoading, setIsLoading] = React.useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const supabase = createClientComponentClient()
 
-  const [formState, setFormState] = React.useState({
+  const [formState, setFormState] = useState({
     email: '',
     password: ''
   })
@@ -53,24 +53,13 @@ export function LoginForm({ action = 'sign-in', ...props }) {
     } else {
       const { data: session } = await supabase.auth.getSession()
       if (session) {
-        // If session exists, redirect to homepage immediately
-        router.replace('/') // This ensures page redirect
+        // After successful login, trigger a refresh
+        router.refresh() // Force re-render
       } else {
         setIsLoading(false)
       }
     }
   }
-
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data: session } = await supabase.auth.getSession()
-      if (session) {
-        // If session exists, redirect immediately after login
-        router.replace('/') // Redirect to homepage
-      }
-    }
-    checkSession()
-  }, [router, supabase.auth])
 
   const handleOnSubmit = async (e) => {
     e.preventDefault()
@@ -86,7 +75,8 @@ export function LoginForm({ action = 'sign-in', ...props }) {
     setIsLoading(false)
     const { data: session } = await supabase.auth.getSession()
     if (session) {
-      router.replace('/') // Redirect to homepage after sign-in or sign-up
+      // After successful sign-in or sign-up, trigger a refresh
+      router.refresh() // Force re-render
     }
   }
 
