@@ -63,9 +63,8 @@ export async function Header() {
           rel="noopener noreferrer"
           className={cn(buttonVariants())}
         >
-          {/* Ensure proper display of LogIQ Curve text on both small and large screens */}
-          <span className="hidden sm:block">LogIQ Curve</span>
-          <span className="sm:hidden">LogIQ</span>
+          {/* Show full "LogIQ Curve" text on both mobile and desktop screens */}
+          <span className="block">LogIQ Curve</span> {/* This will ensure it's always visible */}
         </a>
       </div>
     </header>
