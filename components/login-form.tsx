@@ -75,8 +75,8 @@ export function LoginForm({
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (event === 'SIGNED_IN' && session) {
-          // If signed in, redirect to home page
-          router.replace('/') // Use replace instead of push for better routing
+          // Redirect to home page immediately after successful login
+          router.replace('/') // This will refresh the route
         }
       }
     )
