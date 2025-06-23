@@ -8,7 +8,6 @@ import { Input } from './ui/input'
 import { Label } from './ui/label'
 import Link from 'next/link'
 import { toast } from 'react-hot-toast'
-import { useRouter } from 'next/navigation'
 
 export function LoginForm({ action = 'sign-in', ...props }) {
   const [isLoading, setIsLoading] = useState(false)
@@ -17,7 +16,6 @@ export function LoginForm({ action = 'sign-in', ...props }) {
     password: ''
   })
   const supabase = createClientComponentClient()
-  const router = useRouter()
 
   // Google OAuth login
   const signInWithGoogle = async () => {
@@ -79,24 +77,24 @@ export function LoginForm({ action = 'sign-in', ...props }) {
     // After successful login or sign-up, check for session
     const { data: session } = await supabase.auth.getSession()
     if (session) {
-      // Only perform the redirect to homepage after successful login or sign-up
-      router.push('/') // Redirect to homepage
+      // If session exists, redirect to homepage
+      window.location.href = '/' // Force redirect to homepage
     }
 
     setIsLoading(false)
   }
 
-  // Check session when the component loads to avoid redirecting before user input
   useEffect(() => {
+    // Check if the user is already signed in on initial load
     const checkSessionAndRedirect = async () => {
       const { data: session } = await supabase.auth.getSession()
       if (session) {
-        router.push('/') // Redirect to homepage if session exists
+        window.location.href = '/' // Force redirect to homepage if session exists
       }
     }
 
-    checkSessionAndRedirect() // Only check the session after component mounts
-  }, [router])
+    checkSessionAndRedirect() // Check session when the component loads
+  }, [])
 
   return (
     <div {...props}>
