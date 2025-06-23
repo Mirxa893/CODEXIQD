@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import * as React from 'react' // Add this import
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Button } from '@/components/ui/button'
 import { IconSpinner } from '@/components/ui/icons'
