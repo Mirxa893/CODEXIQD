@@ -1,28 +1,18 @@
-import 'server-only'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { Database } from '@/lib/db_types'
 
 import { auth } from '@/auth'
 import { nanoid } from '@/lib/utils'
-import formidable from 'formidable'
-import fs from 'fs'
-import path from 'path'
+import { supabase } from '@/lib/supabase'
 
 const SPACE_URL = 'https://mirxakamran893-LOGIQCURVECODE.hf.space/chat'
 
 export const runtime = 'edge'
 
-// Configuring Formidable to handle file uploads
-const form = formidable({
-  uploadDir: './public/uploads', // Change to your preferred location
-  keepExtensions: true, // Retain file extensions
-  maxFileSize: 10 * 1024 * 1024, // Max file size 10MB
-})
-
 export async function POST(req: Request) {
   const cookieStore = cookies()
-  const supabase = createRouteHandlerClient<Database>({
+  const supabaseClient = createRouteHandlerClient<Database>({
     cookies: () => cookieStore,
   })
   const json = await req.json()
@@ -47,7 +37,32 @@ export async function POST(req: Request) {
     })
   }
 
-  // Initialize conversation history
+  // If file upload is included, handle the file upload to Supabase Storage
+  if (req.method === 'POST' && req.headers.get('content-type')?.includes('multipart/form-data')) {
+    const formData = await req.formData()
+    const file = formData.get('file')
+
+    if (file && file instanceof Blob) {
+      const fileName = `${nanoid()}_${file.name}`
+      const filePath = `uploads/${fileName}`
+      
+      // Upload file to Supabase Storage
+      const { data, error } = await supabase.storage.from('chat-files').upload(filePath, file)
+
+      if (error) {
+        return new Response(`Error uploading file: ${error.message}`, { status: 500 })
+      }
+
+      // Get the URL of the uploaded file
+      const fileUrl = supabase.storage.from('chat-files').getPublicUrl(filePath).publicURL
+
+      // Send the file URL to the AI model (or process it as needed)
+      const aiResponse = await processFileWithAI(fileUrl)
+      return new Response(aiResponse, { status: 200 })
+    }
+  }
+
+  // AI Processing Logic
   const history: [string, string][] = [] // Empty history for now
 
   const controller = new AbortController()
@@ -99,7 +114,7 @@ export async function POST(req: Request) {
     }
 
     // Insert chat into the database.
-    await supabase.from('chats').upsert({ id, payload }).throwOnError()
+    await supabaseClient.from('chats').upsert({ id, payload }).throwOnError()
 
     return new Response(reply, {
       status: 200,
@@ -119,40 +134,10 @@ export async function POST(req: Request) {
   }
 }
 
-// This function will handle the file upload (called from the frontend)
-export async function fileUpload(req: Request) {
-  return new Promise((resolve, reject) => {
-    form.parse(req, async (err, fields, files) => {
-      if (err) {
-        return reject(new Response('File upload failed', { status: 500 }))
-      }
-
-      const file = files?.file[0]
-      if (!file) {
-        return reject(new Response('No file uploaded', { status: 400 }))
-      }
-
-      const filePath = path.join(process.cwd(), 'public/uploads', file.newFilename)
-      
-      // Process the uploaded file (for example, read text files, PDFs, or other formats)
-      try {
-        const fileContent = fs.readFileSync(filePath, 'utf-8')
-        
-        // Send file content to Hugging Face or your AI model
-        const aiResponse = await processFileWithAI(fileContent)
-
-        resolve(aiResponse)
-      } catch (error) {
-        reject(new Response('Error processing file content', { status: 500 }))
-      }
-    })
-  })
-}
-
 // Simulating AI processing of file content
-async function processFileWithAI(fileContent: string) {
-  // Simulating sending file content to AI model (Hugging Face or other)
+async function processFileWithAI(fileUrl: string) {
+  // Send the file URL to the AI processing service (this could be Hugging Face or your AI model)
   return {
-    response: `AI Response based on uploaded file content: ${fileContent.slice(0, 100)}...`,
+    response: `AI Response based on uploaded file at: ${fileUrl}`,
   }
 }
